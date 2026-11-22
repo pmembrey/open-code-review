@@ -111,7 +111,7 @@ func TestListProviders_Order(t *testing.T) {
 	if len(providers) < 3 {
 		t.Fatalf("expected at least 3 providers, got %d", len(providers))
 	}
-	expected := []string{"anthropic", "baidu-qianfan", "bedrock", "chatgpt", "dashscope", "dashscope-tokenplan", "deepseek", "edenai", "gemini", "hy-tokenplan", "iflytek", "kimi", "kimi-global", "litellm", "mimo", "minimax", "minimax-cn", "mistral", "novita", "ollama-cloud", "openai", "openai-responses", "opencode", "opencode-go", "openrouter", "siliconflow", "siliconflow-cn", "tencent-tokenhub", "volcengine", "xai", "z-ai", "z-ai-coding"}
+	expected := []string{"anthropic", "baidu-qianfan", "bedrock", "chatgpt", "dashscope", "dashscope-tokenplan", "deepseek", "edenai", "gemini", "hy-tokenplan", "iflytek", "kimi", "kimi-coding", "kimi-coding-global", "kimi-global", "litellm", "mimo", "minimax", "minimax-cn", "mistral", "novita", "ollama-cloud", "openai", "openai-responses", "opencode", "opencode-go", "openrouter", "siliconflow", "siliconflow-cn", "tencent-tokenhub", "volcengine", "xai", "z-ai", "z-ai-coding"}
 	if len(providers) != len(expected) {
 		t.Fatalf("expected %d providers, got %d", len(expected), len(providers))
 	}
@@ -278,6 +278,35 @@ func TestLookupProvider_OpenCodeDetails(t *testing.T) {
 			}
 			if len(p.Models) == 0 {
 				t.Error("Models is empty")
+			}
+		})
+	}
+}
+
+func TestLookupProvider_KimiCodingDetails(t *testing.T) {
+	tests := []struct {
+		name, wantURL string
+	}{
+		{name: "kimi-coding", wantURL: "https://api.kimi.com/coding/v1"},
+		{name: "kimi-coding-global", wantURL: "https://api.kimi.ai/coding/v1"},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			p, ok := LookupProvider(tt.name)
+			if !ok {
+				t.Fatalf("LookupProvider(%q) returned false, want true", tt.name)
+			}
+			if p.Protocol != ProtocolOpenAIChatCompletions {
+				t.Errorf("Protocol = %q, want %q", p.Protocol, ProtocolOpenAIChatCompletions)
+			}
+			if p.BaseURL != tt.wantURL {
+				t.Errorf("BaseURL = %q, want %q", p.BaseURL, tt.wantURL)
+			}
+			if p.EnvVar != "KIMI_API_KEY" {
+				t.Errorf("EnvVar = %q, want %q", p.EnvVar, "KIMI_API_KEY")
+			}
+			if !ModelListContains(p.Models, "kimi-for-coding") {
+				t.Errorf("Models = %v, want the plan's kimi-for-coding model", p.Models)
 			}
 		})
 	}

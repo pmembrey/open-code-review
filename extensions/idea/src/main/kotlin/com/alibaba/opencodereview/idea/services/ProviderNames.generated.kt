@@ -19,6 +19,8 @@ internal fun generatedPresetProviderNames(): Set<String> = setOf(
     "hy-tokenplan",
     "iflytek",
     "kimi",
+    "kimi-coding",
+    "kimi-coding-global",
     "kimi-global",
     "litellm",
     "mimo",

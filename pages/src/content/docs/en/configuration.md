@@ -62,6 +62,8 @@ provider instead uses the ChatGPT credentials created by `ocr auth login`.
 | `iflytek` | openai | `https://spark-api-open.xf-yun.com/v1` | `SPARK_API_KEY` |
 | `kimi` | openai | `https://api.moonshot.cn/v1` | `MOONSHOT_API_KEY` |
 | `kimi-global` | openai | `https://api.moonshot.ai/v1` | `MOONSHOT_GLOBAL_API_KEY` |
+| `kimi-coding` | openai | `https://api.kimi.com/coding/v1` | `KIMI_API_KEY` |
+| `kimi-coding-global` | openai | `https://api.kimi.ai/coding/v1` | `KIMI_API_KEY` |
 | `z-ai` | openai | `https://open.bigmodel.cn/api/paas/v4` | `Z_AI_API_KEY` |
 | `mimo` | openai | `https://api.xiaomimimo.com/v1` | `MIMO_API_KEY` |
 | `minimax` | openai | `https://api.minimax.io/v1` | `MINIMAX_GLOBAL_API_KEY` |
@@ -78,6 +80,10 @@ the OpenCode Go subscription. Create an API key in the
 **Account › Personal API keys**. Both presets automatically send the
 `x-opencode-session` header with OCR's per-conversation session key, which
 the Go plan requires for routing and prompt caching.
+
+`kimi-coding` and `kimi-coding-global` use the Kimi For Coding subscription
+(kimi.com and kimi.ai respectively). The API key comes from the coding plan,
+not the Moonshot open platform, and works only in its own region.
 
 Built-in providers' model lists are suggestions for `ocr config model`, not
 restrictions on `--model`. An override absent from both the built-in list and

@@ -60,6 +60,8 @@ ocr config set providers.anthropic.api_key sk-ant-xxxxxxxxxx
 | `iflytek` | openai | `https://spark-api-open.xf-yun.com/v1` | `SPARK_API_KEY` |
 | `kimi` | openai | `https://api.moonshot.cn/v1` | `MOONSHOT_API_KEY` |
 | `kimi-global` | openai | `https://api.moonshot.ai/v1` | `MOONSHOT_GLOBAL_API_KEY` |
+| `kimi-coding` | openai | `https://api.kimi.com/coding/v1` | `KIMI_API_KEY` |
+| `kimi-coding-global` | openai | `https://api.kimi.ai/coding/v1` | `KIMI_API_KEY` |
 | `z-ai` | openai | `https://open.bigmodel.cn/api/paas/v4` | `Z_AI_API_KEY` |
 | `mimo` | openai | `https://api.xiaomimimo.com/v1` | `MIMO_API_KEY` |
 | `minimax` | openai | `https://api.minimax.io/v1` | `MINIMAX_GLOBAL_API_KEY` |
@@ -75,6 +77,10 @@ ocr config set providers.anthropic.api_key sk-ant-xxxxxxxxxx
 **Account › Personal API keys** 中创建 API key。两个预置都会自动发送携带
 OCR 按对话生成的会话密钥的 `x-opencode-session` 请求头，Go 计划要求以此
 进行路由和提示词缓存。
+
+`kimi-coding` 和 `kimi-coding-global` 使用 Kimi For Coding 订阅
+（分别为 kimi.com 和 kimi.ai）。API key 来自编码订阅而非 Moonshot 开放平台，
+且只能在对应区域使用。
 
 内置 provider 的模型列表只为 `ocr config model` 提供选择建议，不限制 `--model`。
 如果指定的模型既不在内置列表中，也不在 `providers.<name>.models` 中，OCR 会向

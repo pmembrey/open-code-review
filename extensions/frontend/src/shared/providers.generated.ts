@@ -193,6 +193,36 @@ export const PROVIDER_PRESETS: OcrProviderPreset[] = [
     ]
   },
   {
+    "name": "kimi-coding",
+    "displayName": "Kimi For Coding",
+    "protocol": "openai",
+    "baseUrl": "https://api.kimi.com/coding/v1",
+    "envVar": "KIMI_API_KEY",
+    "models": [
+      "kimi-for-coding",
+      "kimi-for-coding-highspeed",
+      "k3.1-pro",
+      "k3.1-pro-highspeed",
+      "k3",
+      "k3-256k"
+    ]
+  },
+  {
+    "name": "kimi-coding-global",
+    "displayName": "Kimi For Coding (Global)",
+    "protocol": "openai",
+    "baseUrl": "https://api.kimi.ai/coding/v1",
+    "envVar": "KIMI_API_KEY",
+    "models": [
+      "kimi-for-coding",
+      "kimi-for-coding-highspeed",
+      "k3.1-pro",
+      "k3.1-pro-highspeed",
+      "k3",
+      "k3-256k"
+    ]
+  },
+  {
     "name": "kimi-global",
     "displayName": "Kimi Moonshot API (Global)",
     "protocol": "openai",

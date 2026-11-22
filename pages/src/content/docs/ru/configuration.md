@@ -66,6 +66,8 @@ ocr config set providers.anthropic.api_key sk-ant-xxxxxxxxxx
 | `iflytek` | openai | `https://spark-api-open.xf-yun.com/v1` | `SPARK_API_KEY` |
 | `kimi` | openai | `https://api.moonshot.cn/v1` | `MOONSHOT_API_KEY` |
 | `kimi-global` | openai | `https://api.moonshot.ai/v1` | `MOONSHOT_GLOBAL_API_KEY` |
+| `kimi-coding` | openai | `https://api.kimi.com/coding/v1` | `KIMI_API_KEY` |
+| `kimi-coding-global` | openai | `https://api.kimi.ai/coding/v1` | `KIMI_API_KEY` |
 | `z-ai` | openai | `https://open.bigmodel.cn/api/paas/v4` | `Z_AI_API_KEY` |
 | `mimo` | openai | `https://api.xiaomimimo.com/v1` | `MIMO_API_KEY` |
 | `minimax` | openai | `https://api.minimax.io/v1` | `MINIMAX_GLOBAL_API_KEY` |
@@ -82,6 +84,10 @@ ocr config set providers.anthropic.api_key sk-ant-xxxxxxxxxx
 **Account › Personal API keys**. Оба пресета автоматически отправляют
 заголовок `x-opencode-session` с ключом диалога OCR; план Go требует его
 для маршрутизации и кеширования промптов.
+
+`kimi-coding` и `kimi-coding-global` используют подписку Kimi For Coding
+(kimi.com и kimi.ai соответственно). API-ключ выдаётся в рамках coding-плана,
+а не на открытой платформе Moonshot, и работает только в своём регионе.
 
 Списки моделей встроенных провайдеров служат подсказкой для `ocr config model` и
 не ограничивают `--model`. Если модель отсутствует и во встроенном списке, и в

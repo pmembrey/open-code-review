@@ -58,6 +58,8 @@ Aşağıdaki sağlayıcılar, temel URL ve protokol önceden ayarlanmış olarak
 | `iflytek` | openai | `https://spark-api-open.xf-yun.com/v1` | `SPARK_API_KEY` |
 | `kimi` | openai | `https://api.moonshot.cn/v1` | `MOONSHOT_API_KEY` |
 | `kimi-global` | openai | `https://api.moonshot.ai/v1` | `MOONSHOT_GLOBAL_API_KEY` |
+| `kimi-coding` | openai | `https://api.kimi.com/coding/v1` | `KIMI_API_KEY` |
+| `kimi-coding-global` | openai | `https://api.kimi.ai/coding/v1` | `KIMI_API_KEY` |
 | `z-ai` | openai | `https://open.bigmodel.cn/api/paas/v4` | `Z_AI_API_KEY` |
 | `mimo` | openai | `https://api.xiaomimimo.com/v1` | `MIMO_API_KEY` |
 | `minimax` | openai | `https://api.minimax.io/v1` | `MINIMAX_GLOBAL_API_KEY` |
@@ -69,6 +71,8 @@ Aşağıdaki sağlayıcılar, temel URL ve protokol önceden ayarlanmış olarak
 | `xai` | openai | `https://api.x.ai/v1` | `XAI_API_KEY` |
 
 `opencode`, OpenCode Console'un kullandıkça öde API'sini çağırır; `opencode-go` ise OpenCode Go aboneliğini kullanır. API anahtarını [OpenCode Console](https://opencode.ai/console) içinde **Account › Personal API keys** bölümünden oluşturun. Her iki ön ayar da OCR'ın konuşma başına oturum anahtarını taşıyan `x-opencode-session` başlığını otomatik olarak gönderir; Go planı yönlendirme ve istem önbelleği için bu başlığı gerektirir.
+
+`kimi-coding` ve `kimi-coding-global`, Kimi For Coding aboneliğini kullanır (sırasıyla kimi.com ve kimi.ai). API anahtarı Moonshot açık platformundan değil coding planından gelir ve yalnızca kendi bölgesinde çalışır.
 
 Yerleşik sağlayıcıların model listeleri, `ocr config model` için öneridir; `--model` seçimini sınırlamaz. Hem yerleşik listede hem `providers.<name>.models` içinde bulunmayan bir model seçilirse stderr'e uyarı yazılır; istek gönderildiğinde modeli sağlayıcı doğrular. Özel sağlayıcıların mevcut `--model` doğrulama kuralları değişmez.
 

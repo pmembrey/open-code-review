@@ -58,6 +58,8 @@ ocr config set providers.anthropic.api_key sk-ant-xxxxxxxxxx
 | `iflytek` | openai | `https://spark-api-open.xf-yun.com/v1` | `SPARK_API_KEY` |
 | `kimi` | openai | `https://api.moonshot.cn/v1` | `MOONSHOT_API_KEY` |
 | `kimi-global` | openai | `https://api.moonshot.ai/v1` | `MOONSHOT_GLOBAL_API_KEY` |
+| `kimi-coding` | openai | `https://api.kimi.com/coding/v1` | `KIMI_API_KEY` |
+| `kimi-coding-global` | openai | `https://api.kimi.ai/coding/v1` | `KIMI_API_KEY` |
 | `z-ai` | openai | `https://open.bigmodel.cn/api/paas/v4` | `Z_AI_API_KEY` |
 | `mimo` | openai | `https://api.xiaomimimo.com/v1` | `MIMO_API_KEY` |
 | `minimax` | openai | `https://api.minimax.io/v1` | `MINIMAX_GLOBAL_API_KEY` |
@@ -74,6 +76,10 @@ OpenCode Go 구독을 사용합니다. API 키는
 **Account › Personal API keys**에서 만드세요. 두 프리셋 모두 OCR의
 대화별 세션 키를 담은 `x-opencode-session` 헤더를 자동으로 전송하며,
 Go 요금제는 라우팅과 프롬프트 캐싱을 위해 이 헤더를 요구합니다.
+
+`kimi-coding`과 `kimi-coding-global`은 Kimi For Coding 구독을 사용합니다
+(각각 kimi.com과 kimi.ai). API 키는 Moonshot 오픈 플랫폼이 아니라 코딩
+구독에서 발급되며, 해당 지역에서만 사용할 수 있습니다.
 
 내장 프로바이더의 모델 목록은 `ocr config model`에서 선택할 때 제안하는 목록이며
 `--model`을 제한하지 않습니다. 지정한 모델이 내장 목록과

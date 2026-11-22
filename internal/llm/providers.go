@@ -388,6 +388,41 @@ var registry = []Provider{
 		},
 	},
 	{
+		// Kimi For Coding subscription endpoints, distinct from the
+		// pay-as-you-go kimi/kimi-global presets: the key comes from the
+		// coding plan, not the Moonshot open platform. Both regions share
+		// the ecosystem's documented KIMI_API_KEY fallback; a key is valid
+		// only for its own region.
+		Name:        "kimi-coding",
+		DisplayName: "Kimi For Coding",
+		Protocol:    ProtocolOpenAIChatCompletions,
+		BaseURL:     "https://api.kimi.com/coding/v1",
+		EnvVar:      "KIMI_API_KEY",
+		Models: []string{
+			"kimi-for-coding",
+			"kimi-for-coding-highspeed",
+			"k3.1-pro",
+			"k3.1-pro-highspeed",
+			"k3",
+			"k3-256k",
+		},
+	},
+	{
+		Name:        "kimi-coding-global",
+		DisplayName: "Kimi For Coding (Global)",
+		Protocol:    ProtocolOpenAIChatCompletions,
+		BaseURL:     "https://api.kimi.ai/coding/v1",
+		EnvVar:      "KIMI_API_KEY",
+		Models: []string{
+			"kimi-for-coding",
+			"kimi-for-coding-highspeed",
+			"k3.1-pro",
+			"k3.1-pro-highspeed",
+			"k3",
+			"k3-256k",
+		},
+	},
+	{
 		Name:        "z-ai",
 		DisplayName: "Z.AI API",
 		Protocol:    ProtocolOpenAIChatCompletions,
