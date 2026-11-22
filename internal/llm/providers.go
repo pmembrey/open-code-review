@@ -38,6 +38,13 @@ type Provider struct {
 	RequiresStreaming     bool
 	RejectsSamplingParams bool
 	Models                []string
+
+	// ExtraHeaders are preset HTTP headers merged under the user's
+	// extra_headers (per header name, matched case-insensitively; the user's
+	// value wins). Values may embed SessionKeyTemplateVar so providers that
+	// route prompt-cache traffic by an explicit session header work without
+	// manual configuration.
+	ExtraHeaders map[string]string
 }
 
 // After modifying the built-in provider registry, run `go generate ./internal/llm`
@@ -133,6 +140,79 @@ var registry = []Provider{
 			"anthropic/claude-opus-5",
 			"openai/gpt-6-astra",
 			"moonshotai/kimi-k3",
+		},
+	},
+	{
+		// Console serves every paid text model through every API family,
+		// translating between them, so Chat Completions reaches the whole
+		// catalog. x-opencode-session carries the conversation's session key
+		// for routing and prompt-cache reuse; the Go plan requires it.
+		Name:        "opencode",
+		DisplayName: "OpenCode Console API",
+		Protocol:    ProtocolOpenAIChatCompletions,
+		BaseURL:     "https://opencode.ai/inference/openai/v1",
+		EnvVar:      "OPENCODE_API_KEY",
+		ExtraHeaders: map[string]string{
+			"x-opencode-session": SessionKeyTemplateVar,
+		},
+		Models: []string{
+			"claude-opus-5",
+			"claude-sonnet-5",
+			"gpt-5.5",
+			"gpt-5.4",
+			"gpt-5.3-codex",
+			"grok-4.7",
+			"gemini-4-argon",
+			"kimi-k3",
+			"kimi-k2.7-code",
+			"glm-5.3",
+			"deepseek-v4-pro",
+			"deepseek-v4.1-flash",
+			"minimax-m3",
+			"qwen3.8-max",
+		},
+	},
+	{
+		// Same gateway as opencode, billed against the Go subscription's
+		// allowance instead of workspace credit. The model list is the paid
+		// Go catalog; free-tier models are not listed because Console serves
+		// them only to OpenCode itself.
+		Name:        "opencode-go",
+		DisplayName: "OpenCode Go",
+		Protocol:    ProtocolOpenAIChatCompletions,
+		BaseURL:     "https://opencode.ai/inference/go/openai/v1",
+		EnvVar:      "OPENCODE_API_KEY",
+		ExtraHeaders: map[string]string{
+			"x-opencode-session": SessionKeyTemplateVar,
+		},
+		Models: []string{
+			"kimi-k3",
+			"kimi-k3.1-pro",
+			"kimi-k2.7-code",
+			"glm-5.3",
+			"glm-5.3-flash",
+			"deepseek-v4-pro",
+			"deepseek-v4.1-flash",
+			"qwen4-max",
+			"qwen3.8-max",
+			"qwen3.8-flash",
+			"qwen3.7-plus",
+			"minimax-m3",
+			"minimax-m3.1-flash",
+			"mimo-v2.6-pro",
+			"mimo-v2.6-flash",
+			"hy4",
+			"hy4-preview",
+			"hy3",
+			"longcat-2.0",
+			"step-5-preview",
+			"grok-4.7",
+			"gpt-6-luna",
+			"gpt-5.6-luna",
+			"claude-haiku-5-5",
+			"gemini-4-argon",
+			"muse-spark-1.3-contributor",
+			"muse-spark-1.2-contributor",
 		},
 	},
 	{
@@ -541,6 +621,13 @@ func copyProvider(p Provider) Provider {
 		models := make([]string, len(p.Models))
 		copy(models, p.Models)
 		p.Models = models
+	}
+	if p.ExtraHeaders != nil {
+		headers := make(map[string]string, len(p.ExtraHeaders))
+		for k, v := range p.ExtraHeaders {
+			headers[k] = v
+		}
+		p.ExtraHeaders = headers
 	}
 	return p
 }

@@ -46,6 +46,8 @@ Aşağıdaki sağlayıcılar, temel URL ve protokol önceden ayarlanmış olarak
 | `openai` | openai | `https://api.openai.com/v1` | `OPENAI_API_KEY` |
 | `openai-responses` | openai-responses | `https://api.openai.com/v1` | `OPENAI_RESPONSES_API_KEY` |
 | `openrouter` | openai | `https://openrouter.ai/api/v1` | `OPENROUTER_API_KEY` |
+| `opencode` | openai | `https://opencode.ai/inference/openai/v1` | `OPENCODE_API_KEY` |
+| `opencode-go` | openai | `https://opencode.ai/inference/go/openai/v1` | `OPENCODE_API_KEY` |
 | `gemini` | openai | `https://generativelanguage.googleapis.com/v1beta/openai` | `GEMINI_API_KEY` |
 | `dashscope` | openai | `https://dashscope.aliyuncs.com/compatible-mode/v1` | `DASHSCOPE_API_KEY` |
 | `dashscope-tokenplan` | openai | `https://token-plan.cn-beijing.maas.aliyuncs.com/compatible-mode/v1` | `DASHSCOPE_TOKENPLAN_KEY` |
@@ -65,6 +67,8 @@ Aşağıdaki sağlayıcılar, temel URL ve protokol önceden ayarlanmış olarak
 | `siliconflow-cn`  | openai | `https://api.siliconflow.cn/v1` | `SILICONFLOW_API_KEY` |
 | `novita` | openai | `https://api.novita.ai/openai` | `NOVITA_API_KEY` |
 | `xai` | openai | `https://api.x.ai/v1` | `XAI_API_KEY` |
+
+`opencode`, OpenCode Console'un kullandıkça öde API'sini çağırır; `opencode-go` ise OpenCode Go aboneliğini kullanır. API anahtarını [OpenCode Console](https://opencode.ai/console) içinde **Account › Personal API keys** bölümünden oluşturun. Her iki ön ayar da OCR'ın konuşma başına oturum anahtarını taşıyan `x-opencode-session` başlığını otomatik olarak gönderir; Go planı yönlendirme ve istem önbelleği için bu başlığı gerektirir.
 
 Yerleşik sağlayıcıların model listeleri, `ocr config model` için öneridir; `--model` seçimini sınırlamaz. Hem yerleşik listede hem `providers.<name>.models` içinde bulunmayan bir model seçilirse stderr'e uyarı yazılır; istek gönderildiğinde modeli sağlayıcı doğrular. Özel sağlayıcıların mevcut `--model` doğrulama kuralları değişmez.
 
@@ -332,6 +336,8 @@ ocr config set providers.openai.extra_body '{"prompt_cache_key": "{ocr_session_k
 # By HTTP header (e.g. x-session-affinity)
 ocr config set custom_providers.my-gateway.extra_headers "x-session-affinity={ocr_session_key}"
 ```
+
+`opencode` ve `opencode-go` ön ayarları `x-opencode-session: {ocr_session_key}` başlığını zaten otomatik olarak gönderir; ek ayar gerekmez.
 
 ## İnceleme dilini ayarlama {#configuring-the-review-language}
 

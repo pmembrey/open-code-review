@@ -8,6 +8,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"maps"
 	"os"
 	"regexp"
 	"slices"
@@ -82,6 +83,9 @@ func checkPresets(data []byte, providers []llm.Provider) error {
 		if actual.AmbientAuth != provider.AmbientAuth {
 			return fmt.Errorf("ambientAuth for provider %q is %t, want %t", provider.Name, actual.AmbientAuth, provider.AmbientAuth)
 		}
+		if !maps.Equal(actual.ExtraHeaders, provider.ExtraHeaders) {
+			return fmt.Errorf("extraHeaders for provider %q are %v, want %v", provider.Name, actual.ExtraHeaders, provider.ExtraHeaders)
+		}
 	}
 	return nil
 }
@@ -123,6 +127,7 @@ func decodePresets(data []byte) ([]preset, error) {
 			{"models", true, &models},
 			{"authHeader", false, &actual.AuthHeader},
 			{"ambientAuth", false, &actual.AmbientAuth},
+			{"extraHeaders", false, &actual.ExtraHeaders},
 		} {
 			value, exists := record[field.name]
 			if !exists {

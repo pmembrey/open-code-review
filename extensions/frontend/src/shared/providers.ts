@@ -14,6 +14,7 @@ export interface OcrProviderPreset {
   authHeader?: string;
   envVar: string;
   ambientAuth?: boolean;
+  extraHeaders?: Record<string, string>;
   models: string[];
 }
 

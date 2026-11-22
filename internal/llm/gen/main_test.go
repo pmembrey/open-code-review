@@ -39,6 +39,12 @@ func TestRenderPreservesMetadataAndModelOrder(t *testing.T) {
 			Name: "responses", Protocol: llm.ProtocolOpenAIResponses,
 			Models: []string{"responses-model"},
 		},
+		{
+			Name: "session", Protocol: llm.ProtocolOpenAIChatCompletions,
+			BaseURL: "https://session.example/v1", EnvVar: "SESSION_API_KEY",
+			ExtraHeaders: map[string]string{"x-session": "{ocr_session_key}"},
+			Models:       []string{"session-model"},
+		},
 	}
 	data, err := render(providers)
 	if err != nil {
@@ -66,6 +72,12 @@ func TestRenderPreservesMetadataAndModelOrder(t *testing.T) {
 		{
 			"name": "responses", "displayName": "", "protocol": "openai-responses",
 			"baseUrl": "", "envVar": "", "models": []any{"responses-model"},
+		},
+		{
+			"name": "session", "displayName": "", "protocol": "openai",
+			"baseUrl": "https://session.example/v1", "envVar": "SESSION_API_KEY",
+			"extraHeaders": map[string]any{"x-session": "{ocr_session_key}"},
+			"models":       []any{"session-model"},
 		},
 	}
 	if !reflect.DeepEqual(got, want) {

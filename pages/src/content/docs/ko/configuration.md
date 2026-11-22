@@ -46,6 +46,8 @@ ocr config set providers.anthropic.api_key sk-ant-xxxxxxxxxx
 | `openai` | openai | `https://api.openai.com/v1` | `OPENAI_API_KEY` |
 | `openai-responses` | openai-responses | `https://api.openai.com/v1` | `OPENAI_RESPONSES_API_KEY` |
 | `openrouter` | openai | `https://openrouter.ai/api/v1` | `OPENROUTER_API_KEY` |
+| `opencode` | openai | `https://opencode.ai/inference/openai/v1` | `OPENCODE_API_KEY` |
+| `opencode-go` | openai | `https://opencode.ai/inference/go/openai/v1` | `OPENCODE_API_KEY` |
 | `gemini` | openai | `https://generativelanguage.googleapis.com/v1beta/openai` | `GEMINI_API_KEY` |
 | `dashscope` | openai | `https://dashscope.aliyuncs.com/compatible-mode/v1` | `DASHSCOPE_API_KEY` |
 | `dashscope-tokenplan` | openai | `https://token-plan.cn-beijing.maas.aliyuncs.com/compatible-mode/v1` | `DASHSCOPE_TOKENPLAN_KEY` |
@@ -65,6 +67,13 @@ ocr config set providers.anthropic.api_key sk-ant-xxxxxxxxxx
 | `siliconflow-cn`  | openai | `https://api.siliconflow.cn/v1` | `SILICONFLOW_API_KEY` |
 | `novita` | openai | `https://api.novita.ai/openai` | `NOVITA_API_KEY` |
 | `xai` | openai | `https://api.x.ai/v1` | `XAI_API_KEY` |
+
+`opencode`는 OpenCode Console 종량제 API를 호출하고, `opencode-go`는
+OpenCode Go 구독을 사용합니다. API 키는
+[OpenCode Console](https://opencode.ai/console)의
+**Account › Personal API keys**에서 만드세요. 두 프리셋 모두 OCR의
+대화별 세션 키를 담은 `x-opencode-session` 헤더를 자동으로 전송하며,
+Go 요금제는 라우팅과 프롬프트 캐싱을 위해 이 헤더를 요구합니다.
 
 내장 프로바이더의 모델 목록은 `ocr config model`에서 선택할 때 제안하는 목록이며
 `--model`을 제한하지 않습니다. 지정한 모델이 내장 목록과
@@ -369,6 +378,9 @@ ocr config set providers.openai.extra_body '{"prompt_cache_key": "{ocr_session_k
 # HTTP 헤더로 전달(예: x-session-affinity)
 ocr config set custom_providers.my-gateway.extra_headers "x-session-affinity={ocr_session_key}"
 ```
+
+`opencode`와 `opencode-go` 프리셋은 이미
+`x-opencode-session: {ocr_session_key}`를 자동으로 전송하므로 설정이 필요 없습니다.
 
 ## 리뷰 언어 설정 {#configuring-the-review-language}
 

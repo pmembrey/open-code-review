@@ -72,7 +72,7 @@ func resolveChatGPT(cfg configFile, entry providerEntryConfig, override string, 
 		}
 		model = models[0].Slug
 	}
-	return ResolvedEndpoint{URL: chatgptauth.Resource, Token: auth.AccessToken, Provider: "chatgpt", Source: "provider:chatgpt (Using ChatGPT plan; Manage usage: " + chatgptauth.UsageURL + ")", Protocol: ProtocolOpenAIResponses, Model: model, Timeout: timeout, ExtraBody: entry.ExtraBody, ExtraHeaders: entry.ExtraHeaders, RequiresStreaming: true, RejectsSamplingParams: true, ChatGPTPlan: true, ChatGPTAccount: auth.ClientID}, true, nil
+	return ResolvedEndpoint{URL: chatgptauth.Resource, Token: auth.AccessToken, Provider: "chatgpt", Source: "provider:chatgpt (Using ChatGPT plan; Manage usage: " + chatgptauth.UsageURL + ")", Protocol: ProtocolOpenAIResponses, Model: model, Timeout: timeout, ExtraBody: entry.ExtraBody, ExtraHeaders: copyExtraHeaders(entry.ExtraHeaders), RequiresStreaming: true, RejectsSamplingParams: true, ChatGPTPlan: true, ChatGPTAccount: auth.ClientID}, true, nil
 }
 func validateChatGPTBody(body map[string]any) error {
 	for k := range body {

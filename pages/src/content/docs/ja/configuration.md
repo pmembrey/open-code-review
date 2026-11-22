@@ -49,6 +49,8 @@ ocr config set providers.anthropic.api_key sk-ant-xxxxxxxxxx
 | `openai` | openai | `https://api.openai.com/v1` | `OPENAI_API_KEY` |
 | `openai-responses` | openai-responses | `https://api.openai.com/v1` | `OPENAI_RESPONSES_API_KEY` |
 | `openrouter` | openai | `https://openrouter.ai/api/v1` | `OPENROUTER_API_KEY` |
+| `opencode` | openai | `https://opencode.ai/inference/openai/v1` | `OPENCODE_API_KEY` |
+| `opencode-go` | openai | `https://opencode.ai/inference/go/openai/v1` | `OPENCODE_API_KEY` |
 | `gemini` | openai | `https://generativelanguage.googleapis.com/v1beta/openai` | `GEMINI_API_KEY` |
 | `dashscope` | openai | `https://dashscope.aliyuncs.com/compatible-mode/v1` | `DASHSCOPE_API_KEY` |
 | `dashscope-tokenplan` | openai | `https://token-plan.cn-beijing.maas.aliyuncs.com/compatible-mode/v1` | `DASHSCOPE_TOKENPLAN_KEY` |
@@ -68,6 +70,14 @@ ocr config set providers.anthropic.api_key sk-ant-xxxxxxxxxx
 | `siliconflow-cn`  | openai | `https://api.siliconflow.cn/v1` | `SILICONFLOW_API_KEY` |
 | `novita` | openai | `https://api.novita.ai/openai` | `NOVITA_API_KEY` |
 | `xai` | openai | `https://api.x.ai/v1` | `XAI_API_KEY` |
+
+`opencode` は OpenCode Console の従量課金 API を呼び出し、`opencode-go` は
+OpenCode Go サブスクリプションを使用します。API キーは
+[OpenCode Console](https://opencode.ai/console) の
+**Account › Personal API keys** で作成してください。どちらのプリセットも
+OCR の会話ごとのセッションキーを載せた `x-opencode-session` ヘッダーを
+自動送信します。Go プランはルーティングとプロンプトキャッシュのために
+このヘッダーを必須としています。
 
 組み込み provider のモデル一覧は `ocr config model` の選択候補であり、`--model`
 の制限には使われません。組み込み一覧にも `providers.<name>.models` にもないモデルを
@@ -468,6 +478,9 @@ ocr config set providers.openai.extra_body '{"prompt_cache_key": "{ocr_session_k
 # HTTP ヘッダーで渡す場合（例：x-session-affinity）
 ocr config set custom_providers.my-gateway.extra_headers "x-session-affinity={ocr_session_key}"
 ```
+
+`opencode` と `opencode-go` のプリセットは
+`x-opencode-session: {ocr_session_key}` をすでに自動送信するため、設定は不要です。
 
 ## レビュー言語を設定する
 

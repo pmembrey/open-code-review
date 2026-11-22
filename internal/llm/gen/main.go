@@ -17,14 +17,15 @@ import (
 // preset contains only built-in metadata, never resolved user configuration or
 // credentials. Keep the JSON field names aligned with OcrProviderPreset.
 type preset struct {
-	Name        string   `json:"name"`
-	DisplayName string   `json:"displayName"`
-	Protocol    string   `json:"protocol"`
-	BaseURL     string   `json:"baseUrl"`
-	AuthHeader  string   `json:"authHeader,omitempty"`
-	EnvVar      string   `json:"envVar"`
-	AmbientAuth bool     `json:"ambientAuth,omitempty"`
-	Models      []string `json:"models"`
+	Name         string            `json:"name"`
+	DisplayName  string            `json:"displayName"`
+	Protocol     string            `json:"protocol"`
+	BaseURL      string            `json:"baseUrl"`
+	AuthHeader   string            `json:"authHeader,omitempty"`
+	EnvVar       string            `json:"envVar"`
+	AmbientAuth  bool              `json:"ambientAuth,omitempty"`
+	ExtraHeaders map[string]string `json:"extraHeaders,omitempty"`
+	Models       []string          `json:"models"`
 }
 
 const header = `// SPDX-License-Identifier: Apache-2.0
@@ -110,14 +111,15 @@ func render(providers []llm.Provider) ([]byte, error) {
 	for _, p := range providers {
 		models := append([]string{}, p.Models...)
 		presets = append(presets, preset{
-			Name:        p.Name,
-			DisplayName: p.DisplayName,
-			Protocol:    p.Protocol,
-			BaseURL:     p.BaseURL,
-			AuthHeader:  p.AuthHeader,
-			EnvVar:      p.EnvVar,
-			AmbientAuth: p.AmbientAuth,
-			Models:      models,
+			Name:         p.Name,
+			DisplayName:  p.DisplayName,
+			Protocol:     p.Protocol,
+			BaseURL:      p.BaseURL,
+			AuthHeader:   p.AuthHeader,
+			EnvVar:       p.EnvVar,
+			AmbientAuth:  p.AmbientAuth,
+			ExtraHeaders: p.ExtraHeaders,
+			Models:       models,
 		})
 	}
 	data, err := json.MarshalIndent(presets, "", "  ")

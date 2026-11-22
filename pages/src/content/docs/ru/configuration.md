@@ -54,6 +54,8 @@ ocr config set providers.anthropic.api_key sk-ant-xxxxxxxxxx
 | `openai` | openai | `https://api.openai.com/v1` | `OPENAI_API_KEY` |
 | `openai-responses` | openai-responses | `https://api.openai.com/v1` | `OPENAI_RESPONSES_API_KEY` |
 | `openrouter` | openai | `https://openrouter.ai/api/v1` | `OPENROUTER_API_KEY` |
+| `opencode` | openai | `https://opencode.ai/inference/openai/v1` | `OPENCODE_API_KEY` |
+| `opencode-go` | openai | `https://opencode.ai/inference/go/openai/v1` | `OPENCODE_API_KEY` |
 | `gemini` | openai | `https://generativelanguage.googleapis.com/v1beta/openai` | `GEMINI_API_KEY` |
 | `dashscope` | openai | `https://dashscope.aliyuncs.com/compatible-mode/v1` | `DASHSCOPE_API_KEY` |
 | `dashscope-tokenplan` | openai | `https://token-plan.cn-beijing.maas.aliyuncs.com/compatible-mode/v1` | `DASHSCOPE_TOKENPLAN_KEY` |
@@ -73,6 +75,13 @@ ocr config set providers.anthropic.api_key sk-ant-xxxxxxxxxx
 | `siliconflow-cn`  | openai | `https://api.siliconflow.cn/v1` | `SILICONFLOW_API_KEY` |
 | `novita` | openai | `https://api.novita.ai/openai` | `NOVITA_API_KEY` |
 | `xai` | openai | `https://api.x.ai/v1` | `XAI_API_KEY` |
+
+`opencode` обращается к тарифицируемому API OpenCode Console, а `opencode-go`
+использует подписку OpenCode Go. Создайте API-ключ в
+[OpenCode Console](https://opencode.ai/console) в разделе
+**Account › Personal API keys**. Оба пресета автоматически отправляют
+заголовок `x-opencode-session` с ключом диалога OCR; план Go требует его
+для маршрутизации и кеширования промптов.
 
 Списки моделей встроенных провайдеров служат подсказкой для `ocr config model` и
 не ограничивают `--model`. Если модель отсутствует и во встроенном списке, и в
@@ -503,6 +512,9 @@ ocr config set providers.openai.extra_body '{"prompt_cache_key": "{ocr_session_k
 # Через HTTP-заголовок (например, x-session-affinity)
 ocr config set custom_providers.my-gateway.extra_headers "x-session-affinity={ocr_session_key}"
 ```
+
+Пресеты `opencode` и `opencode-go` уже отправляют
+`x-opencode-session: {ocr_session_key}` автоматически; настройка не требуется.
 
 ## Настройка языка ревью
 

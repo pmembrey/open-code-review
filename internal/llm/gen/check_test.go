@@ -25,20 +25,27 @@ func TestCheckPresets(t *testing.T) {
 			Name: "beta", DisplayName: "Beta", Protocol: llm.ProtocolAnthropicBedrock,
 			AmbientAuth: true,
 		},
+		{
+			Name: "gamma", DisplayName: "Gamma", Protocol: llm.ProtocolOpenAIChatCompletions,
+			BaseURL: "https://gamma.example/v1", EnvVar: "GAMMA_API_KEY",
+			ExtraHeaders: map[string]string{"x-session": "{ocr_session_key}"},
+			Models:       []string{"gamma-model"},
+		},
 	}
 	const alpha = `{"name":"alpha","displayName":"Alpha","protocol":"openai","baseUrl":"https://example.com/v1","authHeader":"Authorization","envVar":"ALPHA_API_KEY","models":["default","other"]}`
 	const beta = `{"name":"beta","displayName":"Beta","protocol":"anthropic-bedrock","baseUrl":"","envVar":"","ambientAuth":true,"models":[]}`
-	valid := "[" + alpha + "," + beta + "]"
+	const gamma = `{"name":"gamma","displayName":"Gamma","protocol":"openai","baseUrl":"https://gamma.example/v1","envVar":"GAMMA_API_KEY","extraHeaders":{"x-session":"{ocr_session_key}"},"models":["gamma-model"]}`
+	valid := "[" + alpha + "," + beta + "," + gamma + "]"
 	for _, tc := range []struct {
 		name, payload, wantErr string
 	}{
 		{"matching values", valid, ""},
-		{"different whitespace", "[\n  " + alpha + ",\n  " + beta + "\n]", ""},
+		{"different whitespace", "[\n  " + alpha + ",\n  " + beta + ",\n  " + gamma + "\n]", ""},
 		{"missing provider", "[" + alpha + "]", "provider count"},
-		{"extra provider", "[" + alpha + "," + beta + "," + beta + "]", "provider count"},
+		{"extra provider", "[" + alpha + "," + beta + "," + gamma + "," + gamma + "]", "provider count"},
 		{"renamed provider", strings.Replace(valid, `"name":"alpha"`, `"name":"other"`, 1), "provider at index"},
-		{"duplicate provider", "[" + alpha + "," + alpha + "]", "provider at index"},
-		{"reordered providers", "[" + beta + "," + alpha + "]", "provider at index"},
+		{"duplicate provider", "[" + alpha + "," + alpha + "," + gamma + "]", "provider at index"},
+		{"reordered providers", "[" + beta + "," + alpha + "," + gamma + "]", "provider at index"},
 		{"changed model", strings.Replace(valid, `"other"`, `"changed"`, 1), `models for provider "alpha"`},
 		{"reordered models", strings.Replace(valid, `["default","other"]`, `["other","default"]`, 1), `models for provider "alpha"`},
 		{"null models", strings.Replace(valid, `"models":[]`, `"models":null`, 1), "must not be null"},
@@ -52,6 +59,10 @@ func TestCheckPresets(t *testing.T) {
 		{"changed auth header", strings.Replace(valid, `"authHeader":"Authorization"`, `"authHeader":"x-api-key"`, 1), "authHeader"},
 		{"changed environment variable", strings.Replace(valid, `"envVar":"ALPHA_API_KEY"`, `"envVar":"OTHER_API_KEY"`, 1), "envVar"},
 		{"changed ambient authentication", strings.Replace(valid, `"ambientAuth":true`, `"ambientAuth":false`, 1), "ambientAuth"},
+		{"changed extra headers", strings.Replace(valid, `"{ocr_session_key}"`, `"fixed-session"`, 1), "extraHeaders"},
+		{"missing extra headers", strings.Replace(valid, `,"extraHeaders":{"x-session":"{ocr_session_key}"}`, "", 1), "extraHeaders"},
+		{"null extra headers", strings.Replace(valid, `"extraHeaders":{"x-session":"{ocr_session_key}"}`, `"extraHeaders":null`, 1), "must not be null"},
+		{"wrong extra headers type", strings.Replace(valid, `"extraHeaders":{"x-session":"{ocr_session_key}"}`, `"extraHeaders":"x-session"`, 1), `decode field "extraHeaders"`},
 		{"unknown field", strings.Replace(valid, `"name":"alpha"`, `"name":"alpha","unknown":true`, 1), "unknown field"},
 		{"wrong case field", strings.Replace(valid, `"name":"alpha"`, `"Name":"alpha"`, 1), `missing required field "name"`},
 		{"wrong case extra field", strings.Replace(valid, `"name":"alpha"`, `"name":"alpha","Name":"alpha"`, 1), "unknown field"},
@@ -62,7 +73,7 @@ func TestCheckPresets(t *testing.T) {
 		{"null optional auth header", strings.Replace(valid, `"name":"beta"`, `"name":"beta","authHeader":null`, 1), "must not be null"},
 		{"null optional ambient authentication", strings.Replace(valid, `"name":"alpha"`, `"name":"alpha","ambientAuth":null`, 1), "must not be null"},
 		{"wrong scalar type", strings.Replace(valid, `"displayName":"Alpha"`, `"displayName":42`, 1), `decode field "displayName"`},
-		{"null provider", "[" + alpha + ",null]", `missing required field "name"`},
+		{"null provider", "[" + alpha + "," + beta + ",null]", `missing required field "name"`},
 		{"invalid JSON", "[", "decode provider presets"},
 		{"null catalog", "null", "must be an array"},
 		{"trailing JSON", valid + " []", "exactly one JSON array"},

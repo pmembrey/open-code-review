@@ -13,6 +13,7 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+	"slices"
 	"strconv"
 	"strings"
 	"time"
@@ -198,7 +199,9 @@ func finalizeResolvedEndpoint(source string, ep ResolvedEndpoint, env envOverrid
 		if ep.ExtraHeaders == nil {
 			ep.ExtraHeaders = env.headers
 		} else {
-			maps.Copy(ep.ExtraHeaders, env.headers)
+			for key, value := range env.headers {
+				setExtraHeader(ep.ExtraHeaders, key, value)
+			}
 		}
 	}
 	return ep
@@ -580,7 +583,21 @@ func tryProviderConfig(cfg configFile, modelOverride string, callerContext conte
 	}
 
 	extraBody = entry.ExtraBody
-	extraHeaders := entry.ExtraHeaders
+	// Preset headers (e.g. a provider's required session-affinity header)
+	// apply unless the entry overrides the same header, matched
+	// case-insensitively like HTTP itself. The entry is copied so its own
+	// case-variant duplicates collapse deterministically too.
+	extraHeaders := copyExtraHeaders(entry.ExtraHeaders)
+	if isPreset && len(preset.ExtraHeaders) > 0 {
+		merged := make(map[string]string, len(preset.ExtraHeaders)+len(extraHeaders))
+		for k, v := range preset.ExtraHeaders {
+			merged[k] = v
+		}
+		for k, v := range extraHeaders {
+			setExtraHeader(merged, k, v)
+		}
+		extraHeaders = merged
+	}
 
 	timeout, err := ValidateTimeoutSec(entry.TimeoutSec)
 	if err != nil {
@@ -724,7 +741,7 @@ func tryLegacyLlmConfig(cfg configFile, modelOverride string) (ResolvedEndpoint,
 		AuthHeader:   authHeader,
 		Source:       "OCR config file",
 		ExtraBody:    cfg.Llm.ExtraBody,
-		ExtraHeaders: cfg.Llm.ExtraHeaders,
+		ExtraHeaders: copyExtraHeaders(cfg.Llm.ExtraHeaders),
 		Timeout:      timeout,
 		RetryCodes:   retryCodes,
 	}, true, nil
@@ -921,7 +938,7 @@ func ParseExtraHeaders(raw string) (map[string]string, error) {
 		if len(value) >= 2 && value[0] == '"' && value[len(value)-1] == '"' {
 			value = value[1 : len(value)-1]
 		}
-		result[key] = value
+		setExtraHeader(result, key, value)
 	}
 	return result, nil
 }
@@ -951,6 +968,35 @@ func splitHeaderPairs(raw string) ([]string, error) {
 		return nil, fmt.Errorf("unclosed quote in extra headers")
 	}
 	return pairs, nil
+}
+
+// setExtraHeader sets key/value in headers, dropping any existing key that
+// differs only by case. HTTP header names are case-insensitive and
+// http.Header.Set canonicalizes them on the wire, so two casings of one name
+// left in the map would make the surviving value depend on map iteration
+// order. The override's own casing is preserved.
+func setExtraHeader(headers map[string]string, key, value string) {
+	for existing := range headers {
+		if strings.EqualFold(existing, key) {
+			delete(headers, existing)
+		}
+	}
+	headers[key] = value
+}
+
+// copyExtraHeaders copies headers with case-variant spellings of one name
+// collapsed to a single key. Keys are visited in sorted order so a source
+// that spells one header two ways resolves deterministically (the last
+// spelling wins) rather than by map iteration order. Empty input returns nil.
+func copyExtraHeaders(headers map[string]string) map[string]string {
+	if len(headers) == 0 {
+		return nil
+	}
+	out := make(map[string]string, len(headers))
+	for _, k := range slices.Sorted(maps.Keys(headers)) {
+		setExtraHeader(out, k, headers[k])
+	}
+	return out
 }
 
 // ensureMessagesSuffix appends /v1/messages to base URLs that lack a versioned path.

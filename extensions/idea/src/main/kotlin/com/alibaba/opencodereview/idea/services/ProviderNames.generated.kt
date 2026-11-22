@@ -29,6 +29,8 @@ internal fun generatedPresetProviderNames(): Set<String> = setOf(
     "ollama-cloud",
     "openai",
     "openai-responses",
+    "opencode",
+    "opencode-go",
     "openrouter",
     "siliconflow",
     "siliconflow-cn",

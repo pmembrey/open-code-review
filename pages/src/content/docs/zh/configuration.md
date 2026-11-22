@@ -48,6 +48,8 @@ ocr config set providers.anthropic.api_key sk-ant-xxxxxxxxxx
 | `openai` | openai | `https://api.openai.com/v1` | `OPENAI_API_KEY` |
 | `openai-responses` | openai-responses | `https://api.openai.com/v1` | `OPENAI_RESPONSES_API_KEY` |
 | `openrouter` | openai | `https://openrouter.ai/api/v1` | `OPENROUTER_API_KEY` |
+| `opencode` | openai | `https://opencode.ai/inference/openai/v1` | `OPENCODE_API_KEY` |
+| `opencode-go` | openai | `https://opencode.ai/inference/go/openai/v1` | `OPENCODE_API_KEY` |
 | `gemini` | openai | `https://generativelanguage.googleapis.com/v1beta/openai` | `GEMINI_API_KEY` |
 | `dashscope` | openai | `https://dashscope.aliyuncs.com/compatible-mode/v1` | `DASHSCOPE_API_KEY` |
 | `dashscope-tokenplan` | openai | `https://token-plan.cn-beijing.maas.aliyuncs.com/compatible-mode/v1` | `DASHSCOPE_TOKENPLAN_KEY` |
@@ -67,6 +69,12 @@ ocr config set providers.anthropic.api_key sk-ant-xxxxxxxxxx
 | `siliconflow-cn`  | openai | `https://api.siliconflow.cn/v1` | `SILICONFLOW_API_KEY` |
 | `novita` | openai | `https://api.novita.ai/openai` | `NOVITA_API_KEY` |
 | `xai` | openai | `https://api.x.ai/v1` | `XAI_API_KEY` |
+
+`opencode` 调用 OpenCode Console 按量付费 API；`opencode-go` 使用 OpenCode Go
+订阅。请在 [OpenCode Console](https://opencode.ai/console) 的
+**Account › Personal API keys** 中创建 API key。两个预置都会自动发送携带
+OCR 按对话生成的会话密钥的 `x-opencode-session` 请求头，Go 计划要求以此
+进行路由和提示词缓存。
 
 内置 provider 的模型列表只为 `ocr config model` 提供选择建议，不限制 `--model`。
 如果指定的模型既不在内置列表中，也不在 `providers.<name>.models` 中，OCR 会向
@@ -424,6 +432,9 @@ ocr config set providers.openai.extra_body '{"prompt_cache_key": "{ocr_session_k
 # 通过 HTTP 请求头传递（例如 x-session-affinity）
 ocr config set custom_providers.my-gateway.extra_headers "x-session-affinity={ocr_session_key}"
 ```
+
+`opencode` 和 `opencode-go` 预置已自动发送
+`x-opencode-session: {ocr_session_key}`，无需额外配置。
 
 ## 配置评审语言
 

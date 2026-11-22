@@ -86,7 +86,7 @@ func TestMiniMaxSuggestedModels(t *testing.T) {
 			if !strings.HasPrefix(strings.ToLower(model), "minimax-") {
 				continue
 			}
-			if model != "MiniMax-M3.1-Flash" && model != "MiniMax-M3" && model != "minimax-m3" {
+			if model != "MiniMax-M3.1-Flash" && model != "MiniMax-M3" && model != "minimax-m3" && model != "minimax-m3.1-flash" {
 				t.Errorf("provider %q suggests legacy MiniMax model %q", provider.Name, model)
 			}
 		}
@@ -111,7 +111,7 @@ func TestListProviders_Order(t *testing.T) {
 	if len(providers) < 3 {
 		t.Fatalf("expected at least 3 providers, got %d", len(providers))
 	}
-	expected := []string{"anthropic", "baidu-qianfan", "bedrock", "chatgpt", "dashscope", "dashscope-tokenplan", "deepseek", "edenai", "gemini", "hy-tokenplan", "iflytek", "kimi", "kimi-global", "litellm", "mimo", "minimax", "minimax-cn", "mistral", "novita", "ollama-cloud", "openai", "openai-responses", "openrouter", "siliconflow", "siliconflow-cn", "tencent-tokenhub", "volcengine", "xai", "z-ai", "z-ai-coding"}
+	expected := []string{"anthropic", "baidu-qianfan", "bedrock", "chatgpt", "dashscope", "dashscope-tokenplan", "deepseek", "edenai", "gemini", "hy-tokenplan", "iflytek", "kimi", "kimi-global", "litellm", "mimo", "minimax", "minimax-cn", "mistral", "novita", "ollama-cloud", "openai", "openai-responses", "opencode", "opencode-go", "openrouter", "siliconflow", "siliconflow-cn", "tencent-tokenhub", "volcengine", "xai", "z-ai", "z-ai-coding"}
 	if len(providers) != len(expected) {
 		t.Fatalf("expected %d providers, got %d", len(expected), len(providers))
 	}
@@ -139,6 +139,16 @@ func TestLookupProvider_ReturnsCopyOfModels(t *testing.T) {
 	p2, _ := LookupProvider("anthropic")
 	if p2.Models[0] == "mutated" {
 		t.Error("LookupProvider returns a reference to Models slice, should return a copy")
+	}
+}
+
+func TestLookupProvider_ReturnsCopyOfExtraHeaders(t *testing.T) {
+	p1, _ := LookupProvider("opencode-go")
+	p1.ExtraHeaders["x-opencode-session"] = "mutated"
+
+	p2, _ := LookupProvider("opencode-go")
+	if p2.ExtraHeaders["x-opencode-session"] == "mutated" {
+		t.Error("LookupProvider returns a reference to ExtraHeaders map, should return a copy")
 	}
 }
 
@@ -233,6 +243,43 @@ func TestLookupProvider_OpenRouterDetails(t *testing.T) {
 	}
 	if p.EnvVar != "OPENROUTER_API_KEY" {
 		t.Errorf("EnvVar = %q, want %q", p.EnvVar, "OPENROUTER_API_KEY")
+	}
+}
+
+func TestLookupProvider_OpenCodeDetails(t *testing.T) {
+	tests := []struct {
+		name, wantURL string
+	}{
+		{name: "opencode", wantURL: "https://opencode.ai/inference/openai/v1"},
+		{name: "opencode-go", wantURL: "https://opencode.ai/inference/go/openai/v1"},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			p, ok := LookupProvider(tt.name)
+			if !ok {
+				t.Fatalf("LookupProvider(%q) returned false, want true", tt.name)
+			}
+			if p.Protocol != ProtocolOpenAIChatCompletions {
+				t.Errorf("Protocol = %q, want %q", p.Protocol, ProtocolOpenAIChatCompletions)
+			}
+			if p.BaseURL != tt.wantURL {
+				t.Errorf("BaseURL = %q, want %q", p.BaseURL, tt.wantURL)
+			}
+			if p.EnvVar != "OPENCODE_API_KEY" {
+				t.Errorf("EnvVar = %q, want %q", p.EnvVar, "OPENCODE_API_KEY")
+			}
+			if p.AuthHeader != "" {
+				t.Errorf("AuthHeader = %q, want empty (OpenAI-compatible uses Bearer by default)", p.AuthHeader)
+			}
+			// Go requires a stable per-conversation session header; the
+			// template expands to the run's session key per request.
+			if got := p.ExtraHeaders["x-opencode-session"]; got != SessionKeyTemplateVar {
+				t.Errorf("ExtraHeaders[x-opencode-session] = %q, want %q", got, SessionKeyTemplateVar)
+			}
+			if len(p.Models) == 0 {
+				t.Error("Models is empty")
+			}
+		})
 	}
 }
 

@@ -272,6 +272,7 @@ func clearAllEnv(t *testing.T) {
 		"ANTHROPIC_BASE_URL", "ANTHROPIC_AUTH_TOKEN", "ANTHROPIC_MODEL",
 		"ANTHROPIC_API_KEY", "OPENAI_API_KEY",
 		"MINIMAX_GLOBAL_API_KEY", "MINIMAX_API_KEY",
+		"OPENCODE_API_KEY",
 	} {
 		t.Setenv(k, "")
 	}
@@ -1550,6 +1551,207 @@ func TestResolveEndpointWithModelOverride_LegacyConfigNoValidation(t *testing.T)
 	}
 }
 
+func TestResolveEndpoint_PresetExtraHeaders(t *testing.T) {
+	clearAllEnv(t)
+	t.Setenv("OCR_LLM_EXTRA_HEADERS", "")
+	path, _ := writeResolverConfig(t, configFile{
+		Provider: "opencode-go",
+		Providers: map[string]providerEntryConfig{
+			"opencode-go": {APIKey: "test-key", Model: "kimi-k3"},
+		},
+	})
+	ep, err := ResolveEndpoint(path)
+	if err != nil {
+		t.Fatalf("ResolveEndpoint: %v", err)
+	}
+	if got := ep.ExtraHeaders["x-opencode-session"]; got != SessionKeyTemplateVar {
+		t.Errorf("ExtraHeaders[x-opencode-session] = %q, want %q", got, SessionKeyTemplateVar)
+	}
+}
+
+func TestResolveEndpoint_PresetExtraHeadersEntryOverride(t *testing.T) {
+	clearAllEnv(t)
+	t.Setenv("OCR_LLM_EXTRA_HEADERS", "")
+	path, _ := writeResolverConfig(t, configFile{
+		Provider: "opencode-go",
+		Providers: map[string]providerEntryConfig{
+			"opencode-go": {
+				APIKey: "test-key",
+				Model:  "kimi-k3",
+				ExtraHeaders: map[string]string{
+					// Different casing than the preset's x-opencode-session:
+					// HTTP treats them as one header, so the entry must win
+					// without leaving a duplicate key behind.
+					"X-Opencode-Session": "fixed-session",
+					"x-custom":           "kept",
+				},
+			},
+		},
+	})
+	ep, err := ResolveEndpoint(path)
+	if err != nil {
+		t.Fatalf("ResolveEndpoint: %v", err)
+	}
+	if len(ep.ExtraHeaders) != 2 {
+		t.Fatalf("ExtraHeaders = %v, want exactly the two entry headers", ep.ExtraHeaders)
+	}
+	if got := ep.ExtraHeaders["X-Opencode-Session"]; got != "fixed-session" {
+		t.Errorf("ExtraHeaders[X-Opencode-Session] = %q, want the entry override %q", got, "fixed-session")
+	}
+	if got := ep.ExtraHeaders["x-custom"]; got != "kept" {
+		t.Errorf("ExtraHeaders[x-custom] = %q, want %q", got, "kept")
+	}
+}
+
+func TestResolveEndpoint_PresetExtraHeadersEnvOverride(t *testing.T) {
+	for _, header := range []string{"x-opencode-session=env-session", "X-OPENCODE-SESSION=env-session"} {
+		t.Run(header, func(t *testing.T) {
+			clearAllEnv(t)
+			t.Setenv("OCR_LLM_EXTRA_HEADERS", header)
+			path, _ := writeResolverConfig(t, configFile{
+				Provider: "opencode-go",
+				Providers: map[string]providerEntryConfig{
+					"opencode-go": {APIKey: "test-key", Model: "kimi-k3"},
+				},
+			})
+			ep, err := ResolveEndpoint(path)
+			if err != nil {
+				t.Fatalf("ResolveEndpoint: %v", err)
+			}
+			if len(ep.ExtraHeaders) != 1 {
+				t.Fatalf("ExtraHeaders = %v, want a single session header", ep.ExtraHeaders)
+			}
+			key := strings.SplitN(header, "=", 2)[0]
+			if got := ep.ExtraHeaders[key]; got != "env-session" {
+				t.Errorf("ExtraHeaders[%s] = %q, want the env override %q", key, got, "env-session")
+			}
+		})
+	}
+}
+
+func TestResolveEndpoint_EntryExtraHeadersEnvOverrideCaseInsensitive(t *testing.T) {
+	clearAllEnv(t)
+	t.Setenv("OCR_LLM_EXTRA_HEADERS", "X-Session-Affinity=env-value")
+	path, _ := writeResolverConfig(t, configFile{
+		Provider: "openai",
+		Providers: map[string]providerEntryConfig{
+			"openai": {
+				APIKey:       "test-key",
+				Model:        "gpt-5.4",
+				ExtraHeaders: map[string]string{"x-session-affinity": "entry-value"},
+			},
+		},
+	})
+	ep, err := ResolveEndpoint(path)
+	if err != nil {
+		t.Fatalf("ResolveEndpoint: %v", err)
+	}
+	if len(ep.ExtraHeaders) != 1 || ep.ExtraHeaders["X-Session-Affinity"] != "env-value" {
+		t.Errorf("ExtraHeaders = %v, want the env override to replace the entry header", ep.ExtraHeaders)
+	}
+}
+
+func TestResolveEndpoint_ExtraHeadersCaseVariantsCollapse(t *testing.T) {
+	// Sorted key order makes the collapse deterministic: "X-Foo" sorts
+	// before "x-foo", so the lowercase spelling is applied last and wins.
+	t.Run("entry on a preset without preset headers", func(t *testing.T) {
+		clearAllEnv(t)
+		t.Setenv("OCR_LLM_EXTRA_HEADERS", "")
+		path, _ := writeResolverConfig(t, configFile{
+			Provider: "openai",
+			Providers: map[string]providerEntryConfig{
+				"openai": {
+					APIKey:       "test-key",
+					Model:        "gpt-5.4",
+					ExtraHeaders: map[string]string{"X-Foo": "a", "x-foo": "b"},
+				},
+			},
+		})
+		ep, err := ResolveEndpoint(path)
+		if err != nil {
+			t.Fatalf("ResolveEndpoint: %v", err)
+		}
+		if len(ep.ExtraHeaders) != 1 || ep.ExtraHeaders["x-foo"] != "b" {
+			t.Errorf("ExtraHeaders = %v, want a single x-foo header", ep.ExtraHeaders)
+		}
+	})
+	t.Run("entry overriding a preset header", func(t *testing.T) {
+		clearAllEnv(t)
+		t.Setenv("OCR_LLM_EXTRA_HEADERS", "")
+		path, _ := writeResolverConfig(t, configFile{
+			Provider: "opencode-go",
+			Providers: map[string]providerEntryConfig{
+				"opencode-go": {
+					APIKey:       "test-key",
+					Model:        "kimi-k3",
+					ExtraHeaders: map[string]string{"X-Opencode-Session": "a", "x-opencode-session": "b"},
+				},
+			},
+		})
+		ep, err := ResolveEndpoint(path)
+		if err != nil {
+			t.Fatalf("ResolveEndpoint: %v", err)
+		}
+		if len(ep.ExtraHeaders) != 1 || ep.ExtraHeaders["x-opencode-session"] != "b" {
+			t.Errorf("ExtraHeaders = %v, want a single x-opencode-session header", ep.ExtraHeaders)
+		}
+	})
+	t.Run("legacy llm block", func(t *testing.T) {
+		clearAllEnv(t)
+		t.Setenv("OCR_LLM_EXTRA_HEADERS", "")
+		path, _ := writeResolverConfig(t, configFile{
+			Llm: llmFileConfig{
+				URL:          "https://api.example.com/v1",
+				AuthToken:    "legacy-token",
+				Model:        "legacy-model",
+				ExtraHeaders: map[string]string{"X-Foo": "a", "x-foo": "b"},
+			},
+		})
+		ep, err := ResolveEndpoint(path)
+		if err != nil {
+			t.Fatalf("ResolveEndpoint: %v", err)
+		}
+		if len(ep.ExtraHeaders) != 1 || ep.ExtraHeaders["x-foo"] != "b" {
+			t.Errorf("ExtraHeaders = %v, want a single x-foo header", ep.ExtraHeaders)
+		}
+	})
+	t.Run("env only", func(t *testing.T) {
+		clearAllEnv(t)
+		t.Setenv("OCR_LLM_EXTRA_HEADERS", "X-Foo=a,x-foo=b")
+		path, _ := writeResolverConfig(t, configFile{
+			Provider: "openai",
+			Providers: map[string]providerEntryConfig{
+				"openai": {APIKey: "test-key", Model: "gpt-5.4"},
+			},
+		})
+		ep, err := ResolveEndpoint(path)
+		if err != nil {
+			t.Fatalf("ResolveEndpoint: %v", err)
+		}
+		if len(ep.ExtraHeaders) != 1 || ep.ExtraHeaders["x-foo"] != "b" {
+			t.Errorf("ExtraHeaders = %v, want the last env occurrence to win", ep.ExtraHeaders)
+		}
+	})
+}
+
+func TestResolveEndpoint_PresetWithoutExtraHeaders(t *testing.T) {
+	clearAllEnv(t)
+	t.Setenv("OCR_LLM_EXTRA_HEADERS", "")
+	path, _ := writeResolverConfig(t, configFile{
+		Provider: "openai",
+		Providers: map[string]providerEntryConfig{
+			"openai": {APIKey: "test-key", Model: "gpt-5.4"},
+		},
+	})
+	ep, err := ResolveEndpoint(path)
+	if err != nil {
+		t.Fatalf("ResolveEndpoint: %v", err)
+	}
+	if len(ep.ExtraHeaders) != 0 {
+		t.Errorf("ExtraHeaders = %v, want empty for a preset without preset headers", ep.ExtraHeaders)
+	}
+}
+
 func TestParseExtraHeaders(t *testing.T) {
 	tests := []struct {
 		name    string
@@ -1574,6 +1776,11 @@ func TestParseExtraHeaders(t *testing.T) {
 				"X-Custom-Header": "value1",
 				"X-Another":       "value2",
 			},
+		},
+		{
+			name:  "case-variant duplicates collapse to the last occurrence",
+			input: "X-Foo=a,x-foo=b",
+			want:  map[string]string{"x-foo": "b"},
 		},
 		{
 			name:  "pairs with whitespace are trimmed",

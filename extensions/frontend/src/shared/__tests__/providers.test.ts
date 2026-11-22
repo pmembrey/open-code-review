@@ -63,6 +63,17 @@ describe('generated provider presets', () => {
     expect(lookupPreset('anthropic')?.authHeader).toBe('x-api-key');
   });
 
+  it('preserves the OpenCode session header required by the Go plan', () => {
+    for (const name of ['opencode', 'opencode-go']) {
+      const preset = lookupPreset(name);
+      expect(preset).toBeDefined();
+      expect(preset?.protocol).toBe('openai');
+      expect(preset?.envVar).toBe('OPENCODE_API_KEY');
+      expect(preset?.extraHeaders).toEqual({ 'x-opencode-session': '{ocr_session_key}' });
+    }
+    expect(lookupPreset('opencode-go')?.baseUrl).toBe('https://opencode.ai/inference/go/openai/v1');
+  });
+
   it('derives ambient authentication from the effective protocol', () => {
     const bedrock = lookupPreset('bedrock');
     const openai = lookupPreset('openai');

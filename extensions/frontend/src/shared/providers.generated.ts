@@ -334,6 +334,71 @@ export const PROVIDER_PRESETS: OcrProviderPreset[] = [
     ]
   },
   {
+    "name": "opencode",
+    "displayName": "OpenCode Console API",
+    "protocol": "openai",
+    "baseUrl": "https://opencode.ai/inference/openai/v1",
+    "envVar": "OPENCODE_API_KEY",
+    "extraHeaders": {
+      "x-opencode-session": "{ocr_session_key}"
+    },
+    "models": [
+      "claude-opus-5",
+      "claude-sonnet-5",
+      "gpt-5.5",
+      "gpt-5.4",
+      "gpt-5.3-codex",
+      "grok-4.7",
+      "gemini-4-argon",
+      "kimi-k3",
+      "kimi-k2.7-code",
+      "glm-5.3",
+      "deepseek-v4-pro",
+      "deepseek-v4.1-flash",
+      "minimax-m3",
+      "qwen3.8-max"
+    ]
+  },
+  {
+    "name": "opencode-go",
+    "displayName": "OpenCode Go",
+    "protocol": "openai",
+    "baseUrl": "https://opencode.ai/inference/go/openai/v1",
+    "envVar": "OPENCODE_API_KEY",
+    "extraHeaders": {
+      "x-opencode-session": "{ocr_session_key}"
+    },
+    "models": [
+      "kimi-k3",
+      "kimi-k3.1-pro",
+      "kimi-k2.7-code",
+      "glm-5.3",
+      "glm-5.3-flash",
+      "deepseek-v4-pro",
+      "deepseek-v4.1-flash",
+      "qwen4-max",
+      "qwen3.8-max",
+      "qwen3.8-flash",
+      "qwen3.7-plus",
+      "minimax-m3",
+      "minimax-m3.1-flash",
+      "mimo-v2.6-pro",
+      "mimo-v2.6-flash",
+      "hy4",
+      "hy4-preview",
+      "hy3",
+      "longcat-2.0",
+      "step-5-preview",
+      "grok-4.7",
+      "gpt-6-luna",
+      "gpt-5.6-luna",
+      "claude-haiku-5-5",
+      "gemini-4-argon",
+      "muse-spark-1.3-contributor",
+      "muse-spark-1.2-contributor"
+    ]
+  },
+  {
     "name": "openrouter",
     "displayName": "OpenRouter",
     "protocol": "openai",
